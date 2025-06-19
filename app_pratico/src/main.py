@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 import logging
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -32,9 +32,9 @@ def create_app():
 
     # Configuração do Banco de Dados SQLite (mais simples para desenvolvimento)
     DATABASE_DIR = os.environ.get("DATABASE_DIR", "/var/data")
-DATABASE_PATH = os.path.join(DATABASE_DIR, "praticante_app.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE_PATH}"
-   app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    DATABASE_PATH = os.path.join(DATABASE_DIR, "praticante_app.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE_PATH}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     
     # Habilitar logs de exceções SQL
     app.config["SQLALCHEMY_ECHO"] = True
@@ -84,3 +84,9 @@ app = create_app()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+   
+  
+        
+ 
+       
