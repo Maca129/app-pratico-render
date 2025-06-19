@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praticante App - Acompanhamento</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <!-- Notificações -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Praticante App - Acompanhamento</h1>
+        
+        <div id="auth-container">
+            <h2>Login / Registro</h2>
+            
+            <div id="login-section">
+                <h3>Login</h3>
+                <form id="login-form">
+                    <input type="text" name="username" placeholder="Usuário" required>
+                    <input type="password" name="password" placeholder="Senha" required>
+                    <button type="submit">Entrar</button>
+                </form>
+            </div>
+            
+            <hr>
+            
+            <div id="register-section">
+                <h3>Registrar</h3>
+                <form id="register-form">
+                    <input type="text" name="username" placeholder="Usuário" required>
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Senha" required>
+                    <button type="submit">Registrar</button>
+                </form>
+                <div id="register-status"></div>
+            </div>
+        </div>
+        
+        <div id="app-container" style="display: none;">
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#" data-page="dashboard" class="active">Dashboard</a></li>
+                    <li><a href="#" data-page="topics">Tópicos</a></li>
+                    <li><a href="#" data-page="revisions">Revisões</a></li>
+                    <li><a href="#" data-page="questions">Questões</a></li>
+                    <li><a href="#" data-page="edital">Edital</a></li>
+                    <li><a href="#" data-page="study-timer">Cronômetro</a></li>
+                    <li><a href="#" id="logout-btn">Sair</a></li>
+                </ul>
+            </nav>
+            
+            <div id="notification-badge">
+                <span class="icon">🔔</span>
+                <span class="count">0</span>
+            </div>
+            
+            <div id="notification-panel" style="display: none;">
+                <h3>Notificações</h3>
+                <div class="notification-list"></div>
+            </div>
+            
+            <div id="content-area">
+                <!-- Dashboard -->
+                <div class="page-content" id="dashboard-page">
+                    <h2>Dashboard</h2>
+                    
+                    <div class="dashboard-grid">
+                        <!-- Progresso por grupo -->
+                        <div class="dashboard-card">
+                            <h3>Progresso por Grupo</h3>
+                            <div class="chart-container">
+                                <canvas id="progress-chart"></canvas>
+                            </div>
+                            <div class="data-table">
+                                <table id="progress-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Grupo</th>
+                                            <th>Concluído</th>
+                                            <th>Total</th>
+                                            <th>Percentual</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Horas estudadas -->
+                        <div class="dashboard-card">
+                            <h3>Horas Estudadas</h3>
+                            <div class="chart-container">
+                                <canvas id="hours-chart"></canvas>
+                            </div>
+                            <div class="data-table">
+                                <table id="hours-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Grupo</th>
+                                            <th>Horas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Desempenho em questões -->
+                        <div class="dashboard-card">
+                            <h3>Desempenho em Questões</h3>
+                            <div class="chart-container">
+                                <canvas id="questions-chart"></canvas>
+                            </div>
+                            <div class="data-table">
+                                <table id="questions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Grupo</th>
+                                            <th>Acertos</th>
+                                            <th>Total</th>
+                                            <th>Percentual</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Progresso no edital -->
+                        <div class="dashboard-card">
+                            <h3>Progresso no Edital</h3>
+                            <div class="chart-container">
+                                <canvas id="edital-chart"></canvas>
+                            </div>
+                            <div class="data-table">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="edital-progress-bar"></div>
+                                </div>
+                                <div class="progress-stats">
+                                    <span id="edital-progress-text">0%</span>
+                                    <span id="edital-items-text">0/0 itens</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tópicos -->
+                <div class="page-content" id="topics-page" style="display: none;">
+                    <h2>Tópicos de Estudo</h2>
+                    
+                    <div class="action-bar">
+                        <button id="add-topic-btn">Adicionar Tópico</button>
+                        <select id="filter-group">
+                            <option value="">Todos os Grupos</option>
+                            <option value="1">Grupo 1</option>
+                            <option value="2">Grupo 2</option>
+                            <option value="3">Grupo 3</option>
+                        </select>
+                    </div>
+                    
+                    <div class="topics-list"></div>
+                    
+                    <div id="topic-modal" class="modal" style="display: none;">
+                        <div class="modal-content">
+                            <span class="close-modal">&times;</span>
+                            <h3>Adicionar/Editar Tópico</h3>
+                            <form id="topic-form">
+                                <input type="hidden" name="topic_id">
+                                <div class="form-group">
+                                    <label>Grupo:</label>
+                                    <select name="group_id" required>
+                                        <option value="1">Grupo 1</option>
+                                        <option value="2">Grupo 2</option>
+                                        <option value="3">Grupo 3</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nome do Tópico:</label>
+                                    <input type="text" name="name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Descrição:</label>
+                                    <textarea name="description"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nível de Confiança:</label>
+                                    <select name="confidence_level">
+                                        <option value="Baixo">Baixo</option>
+                                        <option value="Médio">Médio</option>
+                                        <option value="Alto">Alto</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Concluído:</label>
+                                    <input type="checkbox" name="is_completed">
+                                </div>
+                                <button type="submit">Salvar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Revisões -->
+                <div class="page-content" id="revisions-page" style="display: none;">
+                    <h2>Revisões Programadas</h2>
+                    
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="calendar">Calendário</button>
+                        <button class="view-btn" data-view="list">Lista</button>
+                    </div>
+                    
+                    <div class="revision-views">
+                        <div id="calendar-view" class="revision-view">
+                            <div id="revisions-calendar"></div>
+                        </div>
+                        
+                        <div id="list-view" class="revision-view" style="display: none;">
+                            <div class="filter-bar">
+                                <label>
+                                    <input type="checkbox" id="show-completed" checked> Mostrar concluídas
+                                </label>
+                                <select id="filter-topic">
+                                    <option value="">Todos os Tópicos</option>
+                                </select>
+                            </div>
+                            
+                            <div class="revisions-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="revision-modal" class="modal" style="display: none;">
+                        <div class="modal-content">
+                            <span class="close-modal">&times;</span>
+                            <h3>Detalhes da Revisão</h3>
+                            <form id="revision-form">
+                                <input type="hidden" name="revision_id">
+                                <div class="form-group">
+                                    <label>Tópico:</label>
+                                    <div id="revision-topic-name"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Data Programada:</label>
+                                    <div id="revision-date"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Revisão #:</label>
+                                    <div id="revision-number"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Concluída:</label>
+                                    <input type="checkbox" name="is_completed">
+                                </div>
+                                <div class="form-group">
+                                    <label>Notificar:</label>
+                                    <input type="checkbox" name="notify" checked>
+                                </div>
+                                <div class="form-group">
+                                    <label>Notas:</label>
+                                    <textarea name="notes"></textarea>
+                                </div>
+                                <button type="submit">Salvar</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div id="notification-settings-modal" class="modal" style="display: none;">
+                        <div class="modal-content">
+                            <span class="close-modal">&times;</span>
+                            <h3>Configurações de Notificação</h3>
+                            <form id="notification-settings-form">
+                                <div class="form-group">
+                                    <label>Notificações no Navegador:</label>
+                                    <input type="checkbox" name="enable_browser_notifications" checked>
+                                </div>
+                                <div class="form-group">
+                                    <label>Notificações por Email:</label>
+                                    <input type="checkbox" name="enable_email_notifications">
+                                </div>
+                                <div class="form-group">
+                                    <label>Lembrar quantos minutos antes:</label>
+                                    <input type="number" name="reminder_minutes_before" min="5" max="1440" value="30">
+                                </div>
+                                <button type="submit">Salvar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Questões -->
+                <div class="page-content" id="questions-page" style="display: none;">
+                    <h2>Registro de Questões</h2>
+                    
+                    <div class="action-bar">
+                        <button id="add-question-record-btn">Adicionar Registro</button>
+                        <select id="filter-question-topic">
+                            <option value="">Todos os Tópicos</option>
+                        </select>
+                        <select id="filter-question-difficulty">
+                            <option value="">Todas Dificuldades</option>
+                            <option value="Fácil">Fácil</option>
+                            <option value="Médio">Médio</option>
+                            <option value="Difícil">Difícil</option>
+                        </select>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="questions-performance-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-controls">
+                        <label>Agrupar por:</label>
+                        <select id="group-by-select">
+                            <option value="topic">Tópico</option>
+                            <option value="date">Data</option>
+                            <option value="difficulty">Dificuldade</option>
+                        </select>
+                    </div>
+                    
+                    <h3>Registros</h3>
+                    <div class="question-records-list"></div>
+                    
+                    <div id="question-record-modal" class="modal" style="display: none;">
+                        <div class="modal-content">
+                            <span class="close-modal">&times;</span>
+                            <h3>Adicionar/Editar Registro de Questões</h3>
+                            <form id="question-record-form">
+                                <input type="hidden" name="record_id">
+                                <div class="form-group">
+                                    <label>Tópico:</label>
+                                    <select name="topic_id">
+                                        <option value="">Selecione um tópico</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tópico Específico:</label>
+                                    <input type="text" name="specific_topic">
+                                </div>
+                                <div class="form-group">
+                                    <label>Fonte:</label>
+                                    <input type="text" name="source" placeholder="Ex: Prova 2012, Simulado X">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nível de Dificuldade:</label>
+                                    <select name="difficulty_level">
+                                        <option value="Fácil">Fácil</option>
+                                        <option value="Médio">Médio</option>
+                                        <option value="Difícil">Difícil</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Total de Questões:</label>
+                                    <input type="number" name="total_questions" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Questões Corretas:</label>
+                                    <input type="number" name="correct_answers" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Data:</label>
+                                    <input type="date" name="date">
+                                </div>
+                                <div class="form-group">
+                                    <label>Notas:</label>
+                                    <textarea name="notes"></textarea>
+                                </div>
+                                <button type="submit">Salvar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Edital -->
+                <div class="page-content" id="edital-page" style="display: none;">
+                    <h2>Edital</h2>
+                    
+                    <div class="edital-container">
+                        <div class="edital-sidebar">
+                            <h3>Seções</h3>
+                            <div class="edital-sections-list"></div>
+                            <div class="edital-progress">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="sidebar-edital-progress-bar"></div>
+                                </div>
+                                <div class="progress-stats">
+                                    <span id="sidebar-edital-progress-text">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="edital-content">
+                            <div class="edital-items-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="edital-item-modal" class="modal" style="display: none;">
+                        <div class="modal-content">
+                            <span class="close-modal">&times;</span>
+                            <h3>Marcar Item do Edital</h3>
+                            <form id="edital-item-form">
+                                <input type="hidden" name="edital_item_id">
+                                <div class="form-group">
+                                    <label>Seção:</label>
+                                    <div id="edital-item-section"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Conteúdo:</label>
+                                    <div id="edital-item-content"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Estudado:</label>
+                                    <input type="checkbox" name="is_studied">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nível de Confiança:</label>
+                                    <select name="confidence_level">
+                                        <option value="Baixo">Baixo</option>
+                                        <option value="Médio">Médio</option>
+                                        <option value="Alto">Alto</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Notas:</label>
+                                    <textarea name="notes"></textarea>
+                                </div>
+                                <button type="submit">Salvar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cronômetro de Estudo -->
+                <div class="page-content" id="study-timer-page" style="display: none;">
+                    <h2>Cronômetro de Estudo</h2>
+                    
+                    <div class="timer-container">
+                        <div class="timer-display">
+                            <span id="timer-hours">00</span>:<span id="timer-minutes">00</span>:<span id="timer-seconds">00</span>
+                        </div>
+                        
+                        <div class="timer-controls">
+                            <button id="timer-start-btn" class="timer-btn">Iniciar</button>
+                            <button id="timer-pause-btn" class="timer-btn" disabled>Pausar</button>
+                            <button id="timer-stop-btn" class="timer-btn" disabled>Finalizar</button>
+                        </div>
+                        
+                        <div class="timer-form">
+                            <div class="form-group">
+                                <label>Tópico (opcional):</label>
+                                <select id="timer-topic">
+                                    <option value="">Selecione um tópico</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição:</label>
+                                <textarea id="timer-description" placeholder="O que você está estudando?"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Sessões Recentes</h3>
+                    <div class="study-sessions-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- Notificações -->
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    
+    <script src="/static/script.js"></script>
+    <script src="/static/topics.js"></script>
+    <script src="/static/revisions.js"></script>
+</body>
+</html>
