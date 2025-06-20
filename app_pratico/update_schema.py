@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 import shutil
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -11,8 +11,10 @@ print("Atualizando schema do banco de dados e adicionando revisões de teste..."
 app_dir = os.path.dirname(os.path.abspath(__file__))
 DATABASE_DIR = os.environ.get("DATABASE_DIR", "/var/data")
 db_file = os.path.join(DATABASE_DIR, "praticante_app.db")
-
 print(f"Usando banco de dados em: {db_file}")
+
+os.makedirs(DATABASE_DIR, exist_ok=True) # Garante que o diretório exista
+print(f"Diretório do banco de dados garantido: {DATABASE_DIR}")
 
 # Remover o arquivo do banco de dados se existir
 if os.path.exists(db_file):
@@ -23,7 +25,7 @@ if os.path.exists(db_file):
 # Modificar a configuração do app para usar o novo caminho do banco de dados
 from src.main import app
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_file}"
-print(f"URI do banco de dados configurada: {app.config['SQLALCHEMY_DATABASE_URI']}")
+print(f"URI do banco de dados configurada: {app.config["SQLALCHEMY_DATABASE_URI"]}")
 
 # Importar modelos após configurar o URI do banco de dados
 from src.models.user import db, User
@@ -41,12 +43,12 @@ with app.app_context():
         print(f"Permissões de escrita aplicadas ao banco de dados: {db_file}")
     
     # Criar usuário de teste se não existir
-    test_user = User.query.filter_by(email='test@example.com').first()
+    test_user = User.query.filter_by(email=\'test@example.com\').first()
     if not test_user:
         test_user = User(
-            username='testuser',
-            email='test@example.com',
-            password_hash=generate_password_hash('testpass')
+            username=\'testuser\',
+            email=\'test@example.com\',
+            password_hash=generate_password_hash(\'testpass\')
         )
         db.session.add(test_user)
         db.session.commit()
