@@ -34,6 +34,11 @@ def create_app(environ=None, start_response=None):
 
     # Configuração segura do Banco de Dados para Render
     DATABASE_DIR = os.environ.get("DATABASE_DIR", os.path.join(os.path.dirname(__file__), 'instance'))
+    
+    # Adicionado: Verificação especial para /tmp
+    if DATABASE_DIR.startswith('/tmp'):
+        logger.warning('⚠️ ATENÇÃO: Banco de dados em /tmp - dados serão perdidos ao reiniciar!')
+    
     try:
         os.makedirs(DATABASE_DIR, exist_ok=True)
         if not os.access(DATABASE_DIR, os.W_OK):
