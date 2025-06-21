@@ -29,29 +29,21 @@ def create_app(environ=None, start_response=None):
     app = Flask(__name__, static_folder="static", static_url_path="/static")
     
     # Configuração de segurança
-    app.secret_key = os.environ["FLASK_SECRET_KEY"]
+    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret-key")
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
-    # Configuração segura do Banco de Dados para Render
-    DATABASE_DIR = os.environ.get("DATABASE_DIR", os.path.join(os.path.dirname(__file__), 'instance'))
-    
-    # Adicionado: Verificação especial para /tmp
-    if DATABASE_DIR.startswith('/tmp'):
-        logger.warning('⚠️ ATENÇÃO: Banco de dados em /tmp - dados serão perdidos ao reiniciar!')
-    
-    try:
+    # Configuração do Banco de Dados
+    if 'DATABASE_URL' in os.environ:
+        # Configuração para PostgreSQL no Render
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'].replace(
+            'postgres://', 'postgresql://')
+    else:
+        # Configuração para SQLite local
+        DATABASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'instance'))
         os.makedirs(DATABASE_DIR, exist_ok=True)
-        if not os.access(DATABASE_DIR, os.W_OK):
-            logger.error(f"ERRO: Sem permissão para escrever em {DATABASE_DIR}")
-            DATABASE_DIR = os.path.join(os.path.dirname(__file__), 'data')  # Fallback
-            os.makedirs(DATABASE_DIR, exist_ok=True)
-    except Exception as e:
-        logger.error(f"Erro ao criar diretório do banco: {str(e)}")
-        DATABASE_DIR = os.path.join(os.path.dirname(__file__), 'data')  # Fallback 2
-        os.makedirs(DATABASE_DIR, exist_ok=True)
-
-    DATABASE_PATH = os.path.join(DATABASE_DIR, "praticante_app.db")
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE_PATH}"
+        DATABASE_PATH = os.path.join(DATABASE_DIR, "praticante_app.db")
+        app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE_PATH}"
+    
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     
     # Inicializar SQLAlchemy
@@ -85,4 +77,10 @@ def create_app(environ=None, start_response=None):
             return send_from_directory(app.static_folder, path)
         return send_from_directory(app.static_folder, "index.html")
 
+    # Para compatibilidade com Gunicorn
+    if environ is not None and start_response is not None:
+        return app(environ, start_response)
     return app
+
+# Para execução com Gunicorn
+application = create_app()
