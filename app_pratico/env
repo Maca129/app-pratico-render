@@ -1,0 +1,2 @@
+FLASK_SECRET_KEY=hPlhwGcxZd
+DATABASE_URL=sqlite:///instance/praticante_app.db
