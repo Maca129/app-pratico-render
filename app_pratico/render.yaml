@@ -1,12 +1,16 @@
 services:
   - type: web
     name: praticante-app
-    env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn src.app:application"
+    runtime: python
+    buildCommand: |
+      chmod +x .env.sh
+      ./.env.sh
+      pip install -r requirements.txt
+    startCommand: gunicorn app:application
     envVars:
       - key: FLASK_SECRET_KEY
-        value: "sua-chave-secreta"
+        generateValue: true
       - key: DATABASE_URL
-        value: "URL-do-seu-banco-postgres"
+        fromDatabase:
+          name: praticante_db
+          property: connectionString
