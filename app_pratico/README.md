@@ -7,7 +7,7 @@ Aplicativo de estudos para praticante de prático, pronto para deploy no Render.
 2. Configure:
    - **Root Directory**: `praticante_app`
    - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn src.main:app --bind 0.0.0.0:$PORT`
+   - **Start Command**: `gunicorn src.app:create_app --bind 0.0.0.0:$PORT`
 3. Adicione um disco persistente:
    - **Mount Path**: `/var/data`
 4. Defina as variáveis de ambiente na seção "Environment" do Render:
