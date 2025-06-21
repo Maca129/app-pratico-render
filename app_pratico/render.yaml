@@ -6,7 +6,7 @@ services:
       chmod +x .env.sh
       ./.env.sh
       pip install -r requirements.txt
-    startCommand: gunicorn app:application
+    startCommand: "gunicorn src.app:create_app --bind 0.0.0.0:$PORT"
     envVars:
       - key: FLASK_SECRET_KEY
         generateValue: true
