@@ -3,7 +3,7 @@ from datetime import timedelta
 import os
 from pathlib import Path
 
-# Blueprints (mantenha seus imports)
+# Blueprints
 from models.user import db
 from routes.auth import auth_bp
 from routes.topics import topics_bp
@@ -51,8 +51,9 @@ def create_app():
 
     return app
 
-application = create_app()
+# Aplicação para o Gunicorn
+app = create_app()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    application.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
