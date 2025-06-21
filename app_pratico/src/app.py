@@ -25,17 +25,27 @@ from src.routes.study import study_bp
 from src.routes.revisions import revisions_bp
 from src.routes.edital import edital_bp
 
-def create_app(environ=None, start_response=None):  # SOLUÇÃO DO ERRO: ACEITA PARÂMETROS EXTRAS
+def create_app(environ=None, start_response=None):
     app = Flask(__name__, static_folder="static", static_url_path="/static")
     
     # Configuração de segurança
     app.secret_key = os.environ["FLASK_SECRET_KEY"]
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
-    # Configuração do Banco de Dados
-    DATABASE_DIR = os.environ.get("DATABASE_DIR", "/var/data")
+    # Configuração segura do Banco de Dados para Render
+    DATABASE_DIR = os.environ.get("DATABASE_DIR", os.path.join(os.path.dirname(__file__), 'instance'))
+    try:
+        os.makedirs(DATABASE_DIR, exist_ok=True)
+        if not os.access(DATABASE_DIR, os.W_OK):
+            logger.error(f"ERRO: Sem permissão para escrever em {DATABASE_DIR}")
+            DATABASE_DIR = os.path.join(os.path.dirname(__file__), 'data')  # Fallback
+            os.makedirs(DATABASE_DIR, exist_ok=True)
+    except Exception as e:
+        logger.error(f"Erro ao criar diretório do banco: {str(e)}")
+        DATABASE_DIR = os.path.join(os.path.dirname(__file__), 'data')  # Fallback 2
+        os.makedirs(DATABASE_DIR, exist_ok=True)
+
     DATABASE_PATH = os.path.join(DATABASE_DIR, "praticante_app.db")
-    os.makedirs(DATABASE_DIR, exist_ok=True)
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE_PATH}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     
@@ -51,15 +61,19 @@ def create_app(environ=None, start_response=None):  # SOLUÇÃO DO ERRO: ACEITA 
 
     # Criar tabelas no contexto da aplicação
     with app.app_context():
-        db.create_all()
-        logger.info("Database tables created")
+        try:
+            db.create_all()
+            logger.info("Tabelas do banco criadas com sucesso")
+        except Exception as e:
+            logger.error(f"Erro ao criar tabelas do banco: {str(e)}")
+            logger.error(traceback.format_exc())
 
     # Rota para Single Page Application (SPA)
     @app.route("/")
     def serve_spa():
         return send_from_directory(app.static_folder, "index.html")
     
-    # Rota para tratar atualizações do React Router
+    # Rota para tratamento do React Router
     @app.route("/<path:path>")
     def catch_all(path):
         if os.path.exists(os.path.join(app.static_folder, path)):
