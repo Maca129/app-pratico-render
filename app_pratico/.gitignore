@@ -1,11 +1,30 @@
+# Python
 venv/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.db
-instance/
+*.py[cod]
+*.so
+.Python
+
+# Environment
 .env
-.DS_Store
+.venv
+
+# Database
+*.db
+*.sqlite
+instance/
+
+# Logs
 *.log
+logs/
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Temp
+tmp/
 data/
