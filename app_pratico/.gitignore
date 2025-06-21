@@ -2,8 +2,6 @@
 venv/
 __pycache__/
 *.py[cod]
-*.so
-.Python
 
 # Environment
 .env
@@ -16,15 +14,6 @@ instance/
 
 # Logs
 *.log
-logs/
 
 # OS
 .DS_Store
-
-# IDE
-.idea/
-.vscode/
-
-# Temp
-tmp/
-data/
