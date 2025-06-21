@@ -1,8 +1,9 @@
 from flask import Flask, send_from_directory, jsonify
 from datetime import timedelta
 import os
-import traceback
+from pathlib import Path
 
+# Blueprints (mantenha seus imports)
 from models.user import db
 from routes.auth import auth_bp
 from routes.topics import topics_bp
@@ -12,26 +13,20 @@ from routes.edital import edital_bp
 
 def create_app():
     app = Flask(__name__, static_folder="../static", static_url_path="/static")
+    
+    # Configuração para Render
+    app.config.update(
+        SECRET_KEY=os.environ['FLASK_SECRET_KEY'],
+        PERMANENT_SESSION_LIFETIME=timedelta(days=7),
+        SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL', 'sqlite:///instance/praticante_app.db').replace(
+            'postgres://', 'postgresql://'),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
+    )
 
-    # Segurança
-    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret-key")
-    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
-
-    # Banco de Dados
-    if 'DATABASE_URL' in os.environ:
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'].replace(
-            'postgres://', 'postgresql://'
-        )
-    else:
-        db_path = os.path.join('/tmp', 'praticante_app.db')
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # Inicializar banco
+    # Inicialização do banco
     db.init_app(app)
-
-    # Registrar rotas
+    
+    # Registrar blueprints
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(topics_bp, url_prefix="/api/topics")
     app.register_blueprint(study_bp, url_prefix="/api/study")
@@ -40,32 +35,24 @@ def create_app():
 
     # Criar tabelas
     with app.app_context():
-        try:
-            db.create_all()
-            print("Banco de dados inicializado com sucesso.")
-        except Exception as e:
-            print(f"Erro ao criar tabelas: {e}")
-            print(traceback.format_exc())
+        db.create_all()
 
-    # Health check
-    @app.route("/ping")
-    def ping():
-        return jsonify({"status": "online"}), 200
+    # Rotas
+    @app.route('/health')
+    def health_check():
+        return jsonify({
+            "status": "healthy",
+            "database": app.config['SQLALCHEMY_DATABASE_URI'].split('@')[-1]
+        })
 
-    # SPA fallback
-    @app.route("/")
+    @app.route('/')
     def serve_spa():
-        return send_from_directory(app.static_folder, "index.html")
-
-    @app.route("/<path:path>")
-    def catch_all(path):
-        file_path = os.path.join(app.static_folder, path)
-        if os.path.exists(file_path):
-            return send_from_directory(app.static_folder, path)
-        return send_from_directory(app.static_folder, "index.html")
+        return send_from_directory(app.static_folder, 'index.html')
 
     return app
 
-
-# Instância para o Gunicorn
 application = create_app()
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    application.run(host='0.0.0.0', port=port)
