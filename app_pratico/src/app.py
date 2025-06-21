@@ -4,10 +4,10 @@ from flask import Flask, send_from_directory, jsonify
 from datetime import timedelta
 import sys
 
-# Adiciona o diretório src ao PATH para imports absolutos
+# Configura caminhos para imports
 sys.path.append(str(Path(__file__).parent))
 
-# Imports absolutos corrigidos
+# Imports absolutos
 from src.models.user import db
 from src.routes.auth import auth_bp
 from src.routes.topics import topics_bp
@@ -18,34 +18,36 @@ from src.routes.edital import edital_bp
 def create_app():
     app = Flask(__name__, static_folder="../static", static_url_path="/static")
     
-    # Configuração para Render (com fallbacks seguros)
+    # Configurações
     app.config.update(
-        SECRET_KEY=os.getenv('FLASK_SECRET_KEY', 'dev-key-123'),  # Fallback para desenvolvimento
+        SECRET_KEY=os.getenv('FLASK_SECRET_KEY', 'dev-key-fallback'),
         PERMANENT_SESSION_LIFETIME=timedelta(days=7),
-        SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL', 'sqlite:///instance/praticante_app.db').replace(
-            'postgres://', 'postgresql://', 1),  # Corrige para PostgreSQL no Render
+        SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL', 'sqlite:///instance/app.db').replace(
+            'postgres://', 'postgresql://', 1),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True}  # Conexões persistentes
+        SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True}
     )
 
-    # Inicialização do banco
+    # Inicializações
     db.init_app(app)
     
-    # Registrar blueprints com prefixo API
+    # Blueprints
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(topics_bp, url_prefix="/api/topics")
     app.register_blueprint(study_bp, url_prefix="/api/study")
     app.register_blueprint(revisions_bp, url_prefix="/api/revisions")
     app.register_blueprint(edital_bp, url_prefix="/api/edital")
 
-    # Criar tabelas (apenas se não existirem)
+    # Database
     with app.app_context():
         try:
+            if not os.path.exists('instance'):
+                os.makedirs('instance')
             db.create_all()
         except Exception as e:
-            app.logger.error(f"Erro ao criar tabelas: {str(e)}")
+            app.logger.error(f"Database error: {str(e)}")
 
-    # Rotas básicas
+    # Rotas
     @app.route('/health')
     def health_check():
         return jsonify({
@@ -62,9 +64,8 @@ def create_app():
 
     return app
 
-# Aplicação para o Gunicorn
-app = create_app()
+# Interface para Gunicorn
+application = create_app()
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    application.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
