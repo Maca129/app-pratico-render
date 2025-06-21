@@ -1,24 +1,15 @@
-# ===== DEPENDÊNCIAS PRINCIPAIS =====
-# Flask e banco de dados
-Flask==3.1.1
-Flask-SQLAlchemy==3.1.1
-psycopg2-binary==2.9.9  # PostgreSQL no Render
-python-dotenv==1.0.0
+# 🐍 CORE APPLICATION
+Flask==3.0.2                # Versão LTS estável (compatível com 3.11)
+Flask-SQLAlchemy==3.1.1     # ORM para PostgreSQL do Render
+python-dotenv==1.0.0        # Gerenciamento de variáveis
 
-# Servidor de produção
-gunicorn==21.2.0
+# 🚀 PRODUCTION SERVER
+gunicorn==21.2.0            # WSGI para produção
+whitenoise==6.6.0           # Servir arquivos estáticos
 
-# ===== MANIPULAÇÃO DE ARQUIVOS =====
-# PDF (bibliotecas essenciais)
-fpdf2==2.8.3
-pypdf==5.5.0
-reportlab==4.4.1
+# 🗃️ DATABASE (Render PostgreSQL)
+psycopg2-binary==2.9.9      # Driver oficial PostgreSQL
+SQLAlchemy==2.0.25          # Versão compatível com Flask-SQLAlchemy
 
-# ===== UTILITÁRIOS =====
-requests==2.32.3  # Para APIs externas
-PyYAML==6.0.2     # Para configurações
-
-# ===== ANÁLISE DE DADOS (OPCIONAL) =====
-# Descomente abaixo se necessário:
-# pandas==2.2.3
-# numpy==2.2.6
+# 🔒 SECURITY
+Werkzeug==3.0.1             # Biblioteca core (versão segura)
