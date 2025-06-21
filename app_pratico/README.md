@@ -1,24 +1,23 @@
-# Praticante App Render
+# Praticante App (Render)
 
-Aplicativo de estudos para praticantes de prático, pronto para deploy no Render.
-
-## 🚀 Deploy no Render
-1. Crie um Web Service no Render apontando para este repositório
-2. Adicione um banco de dados PostgreSQL no Render (opcional mas recomendado)
+## 🚀 Deploy
+1. Conecte seu repositório no Render
+2. Adicione um banco PostgreSQL (opcional)
 3. Configure:
-   - **Pasta Raiz**: `praticante_app`
-   - **Comando de Build**: `pip install -r requirements.txt`
-   - **Comando de Inicialização**: `gunicorn src.app:application --bind 0.0.0.0:$PORT`
-4. Defina as variáveis de ambiente na seção "Environment" do Render:
-   - `FLASK_SECRET_KEY` (obrigatória) - Chave secreta para a aplicação Flask
-     - *Sugestão*: Gere uma chave com `openssl rand -hex 32`
-   - `DATABASE_URL` (se estiver usando PostgreSQL no Render - será criada automaticamente)
-   - `PYTHON_VERSION` (recomendado) - `3.11.7`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn src.app:application --bind 0.0.0.0:$PORT`
+4. Variáveis de ambiente:
+   - `FLASK_SECRET_KEY` (obrigatória)
+   - `DATABASE_URL` (auto-configurada com PostgreSQL)
 
-## ✅ Executando localmente
-1. Crie um arquivo `.env` na raiz do projeto com:
+## 💻 Local Development
 ```bash
-FLASK_SECRET_KEY=sua_chave_secreta_aqui
+# Crie um .env com:
+FLASK_SECRET_KEY=chave_temporaria
 PORT=5000
-# Para usar PostgreSQL localmente:
-# DATABASE_URL=postgresql://usuario:senha@localhost/nome_do_banco
+
+# Instale dependências
+pip install -r requirements.txt
+
+# Execute
+python src/app.py
