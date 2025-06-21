@@ -1,15 +1,15 @@
-# 🐍 CORE APPLICATION
-Flask==3.0.2                # Versão LTS estável (compatível com 3.11)
-Flask-SQLAlchemy==3.1.1     # ORM para PostgreSQL do Render
-python-dotenv==1.0.0        # Gerenciamento de variáveis
+# CORE
+Flask==3.0.2
+Flask-SQLAlchemy==3.1.1
+python-dotenv==1.0.0
 
-# 🚀 PRODUCTION SERVER
-gunicorn==21.2.0            # WSGI para produção
-whitenoise==6.6.0           # Servir arquivos estáticos
+# PRODUCTION
+gunicorn==21.2.0
+whitenoise==6.6.0
 
-# 🗃️ DATABASE (Render PostgreSQL)
-psycopg2-binary==2.9.9      # Driver oficial PostgreSQL
-SQLAlchemy==2.0.25          # Versão compatível com Flask-SQLAlchemy
+# DATABASE
+psycopg2-binary==2.9.9
+SQLAlchemy==2.0.25
 
-# 🔒 SECURITY
-Werkzeug==3.0.1             # Biblioteca core (versão segura)
+# SECURITY
+Werkzeug==3.0.1
