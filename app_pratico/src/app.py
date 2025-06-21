@@ -25,11 +25,11 @@ from src.routes.study import study_bp
 from src.routes.revisions import revisions_bp
 from src.routes.edital import edital_bp
 
-def create_app():
+def create_app(environ=None, start_response=None):  # SOLUÇÃO DO ERRO: ACEITA PARÂMETROS EXTRAS
     app = Flask(__name__, static_folder="static", static_url_path="/static")
     
     # Configuração de segurança
-    app.secret_key = os.environ["FLASK_SECRET_KEY"]  # Exigir variável de ambiente
+    app.secret_key = os.environ["FLASK_SECRET_KEY"]
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
     # Configuração do Banco de Dados
@@ -67,7 +67,3 @@ def create_app():
         return send_from_directory(app.static_folder, "index.html")
 
     return app
-
-
- 
-       
